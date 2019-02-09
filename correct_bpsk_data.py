@@ -22,7 +22,7 @@ y = tmp[::2]+np.imag(1j)*tmp[1:2:]
 start = 0
 end = len(y)
 cutoff = (10**(-19))
-# # % Identify data packet
+# Identify data packet
 # indexing reference: start:end:step
 for i in range(len(y))[0:len(y):20]:
     if (np.average(y[i:i+20]) > cutoff):
@@ -41,8 +41,11 @@ plt.show()
 plt.plot(np.real(y))
 plt.show()
 
-# # % Estimate the magnitude of the channel and divide the signal by this
-# # % Create s[k] by squaring the signal
-# # % Take the FFT of the s[k] and find the frequency and amplitude of the spike.
-# # % Estimate x by multiplying ~y exp(j(freq_est * k + theta_est.
-# # % Plot constellation and determine if we need costas loop.
+# Estimate the magnitude of the channel and divide the signal by this
+h_mag_est = np.sqrt(np.mean(np.square(y)))
+y_normalized = y / h_mag_est
+
+# Create s[k] by squaring the signal
+# Take the FFT of the s[k] and find the frequency and amplitude of the spike.
+# Estimate x by multiplying ~y exp(j(freq_est * k + theta_est.
+# Plot constellation and determine if we need costas loop.
