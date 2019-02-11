@@ -43,11 +43,14 @@ freq_axis = np.linspace(-np.pi, np.pi, shifted_fft.shape[-1])
 # plt.show()
 
 
-# Dummy values
-x_offset = 1.5407e-5
-y_height = 7.08958e6
-f_delta  = (x_offset)/2                   # other peak: (.000375895)/2 
+# Actual values
+x_offset = freq_axis[np.argmax(abs(shifted_fft))]
+y_height = np.max(abs(shifted_fft))
+f_delta  = (x_offset)/-2                   # other peak: (.000375895)/2 
 theta    = np.log(y_height)/(-2 * 1j)     # other peak: np.log(2.82879e6)/(-2 * 1j) #
+
+print("x_offset: ", x_offset)
+print("y_height: ", y_height)
 
 # Estimate x by multiplying ~y exp(j(freq_est * k + theta_est.
 psi = f_delta * np.arange(0,y_normalized.shape[-1])  + theta
@@ -75,7 +78,7 @@ for sample in y_normalized:
 
     if (psi_estimate < -1*np.pi):
         psi_estimate += 2*np.pi
-    elif (psi_estimate > -1*np.pi):
+    elif (psi_estimate > np.pi):
         psi_estimate -= 2*np.pi
     x_est.append(x)
 
