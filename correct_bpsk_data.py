@@ -52,11 +52,11 @@ theta    = np.log(y_height)/(-2 * 1j)     # other peak: np.log(2.82879e6)/(-2 * 
 # Estimate x by multiplying ~y exp(j(freq_est * k + theta_est.
 psi = f_delta * np.arange(0,y_normalized.shape[-1])  + theta
 
-# ignoring costas loop:
+# If we ignore the costas loop:
 # x_est = y_normalized * np.exp(1j * psi)
 # x_est_len = len(x_est)
-# Plot constellation
-# plt.plot(np.real(x_est)[:x_est_len//10], np.imag(x_est)[:x_est_len//10], 'o')
+# # Plot constellation
+# plt.plot(np.real(x_est), np.imag(x_est), 'o')
 # plt.show()
 
 prev_error = 0
@@ -81,5 +81,5 @@ for sample in y_normalized:
 
 x_est_len = len(x_est)
 
-plt.plot(np.real(x_est)[:x_est_len//10], np.imag(x_est)[:x_est_len//10], 'o')
+plt.plot(np.real(x_est)[:x_est_len], np.imag(x_est)[:x_est_len], 'o')
 plt.show()
