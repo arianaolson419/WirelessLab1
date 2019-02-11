@@ -44,13 +44,11 @@ freq_axis = np.linspace(-np.pi, np.pi, shifted_fft.shape[-1])
 
 
 # Actual values
-x_offset = freq_axis[np.argmax(abs(shifted_fft))]
-y_height = np.max(abs(shifted_fft))
+x_offset = freq_axis[np.argmax(shifted_fft)]
+y_height = np.max(shifted_fft)
 f_delta  = (x_offset)/-2                   # other peak: (.000375895)/2 
-theta    = np.log(y_height)/(-2 * 1j)     # other peak: np.log(2.82879e6)/(-2 * 1j) #
+theta    = -1*np.angle(y_height)/2     # other peak: np.log(2.82879e6)/(-2 * 1j) #
 
-print("x_offset: ", x_offset)
-print("y_height: ", y_height)
 
 # Estimate x by multiplying ~y exp(j(freq_est * k + theta_est.
 psi = f_delta * np.arange(0,y_normalized.shape[-1])  + theta
@@ -59,7 +57,7 @@ psi = f_delta * np.arange(0,y_normalized.shape[-1])  + theta
 # x_est = y_normalized * np.exp(1j * psi)
 # x_est_len = len(x_est)
 # # Plot constellation
-# plt.plot(np.real(x_est), np.imag(x_est), 'o')
+# plt.plot(np.real(x_est), np.imag(x_est), '.')
 # plt.show()
 
 prev_error = 0
@@ -84,5 +82,5 @@ for sample in y_normalized:
 
 x_est_len = len(x_est)
 
-plt.plot(np.real(x_est)[:x_est_len], np.imag(x_est)[:x_est_len], 'o')
+plt.plot(np.real(x_est)[:x_est_len], np.imag(x_est)[:x_est_len], '.')
 plt.show()
