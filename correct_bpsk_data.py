@@ -14,17 +14,18 @@ print(tmp)
 # imaginary part
 
 
-y = tmp[::2]+np.imag(1j)*tmp[1:2:]
+y = tmp[::2]+1j*tmp[1:2:]
+y = y[1000:]    # Drop the first 1000 samples to account for USRP tx glitch.
 mean_y = np.mean(y)
 y -= mean_y
 
 #eyeballed start & end
-start = 926000
-end = start + 200000
+start = 926000 - 1000 + 120
+end = start + 200000 - 1000
 
 # display signal
-# plt.plot(np.real(y)[start:end])
-# plt.show()
+plt.plot(np.real(y)[start:end])
+plt.show()
 
 # Estimate the magnitude of the channel and divide the signal by this
 h_mag_est = np.sqrt(np.mean(np.square(y)))
@@ -39,10 +40,11 @@ shifted_fft = np.fft.fftshift(fft)
 freq_axis = np.linspace(-np.pi, np.pi, shifted_fft.shape[-1])
 
 # FFT Plot
-# plt.plot(freq_axis, np.abs(shifted_fft))
-# plt.show()
+plt.plot(freq_axis, np.abs(shifted_fft))
+plt.show()
 
 
+print('identify offsets')
 # Actual values
 x_offset = freq_axis[np.argmax(shifted_fft)]
 y_height = np.max(shifted_fft)
@@ -63,9 +65,10 @@ psi = f_delta * np.arange(0,y_normalized.shape[-1])  + theta
 prev_error = 0
 x_est = []
 psi_estimate = theta
-beta = 10
-alpha = 1
+beta = 0.2
+alpha = 0.02
 
+print('costas loop')
 # Costas Loop
 for sample in y_normalized:
     x = sample * np.exp(1j*psi_estimate)
@@ -74,13 +77,17 @@ for sample in y_normalized:
     prev_error += error
     psi_estimate = psi_estimate + d
 
-    if (psi_estimate < -1*np.pi):
+    while psi_estimate < -np.pi:
         psi_estimate += 2*np.pi
-    elif (psi_estimate > np.pi):
+    while psi_estimate > np.pi:
         psi_estimate -= 2*np.pi
     x_est.append(x)
 
 x_est_len = len(x_est)
 
-plt.plot(np.real(x_est)[:x_est_len], np.imag(x_est)[:x_est_len], '.')
+print('plotting corrected signal')
+plt.subplot(2, 1, 1)
+plt.plot(np.real(x_est[:x_est_len // 10]))
+plt.subplot(2, 1, 2)
+#plt.plot(np.real(x_est)[:x_est_len // 10], np.imag(x_est)[:x_est_len // 10], '.')
 plt.show()
