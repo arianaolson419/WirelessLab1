@@ -1,0 +1,3 @@
+*.swp
+# We should be generating large .dat files locally and not pushing them to git.
+*.dat
