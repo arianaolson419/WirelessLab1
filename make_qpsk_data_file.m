@@ -1,7 +1,11 @@
 N = 10000;
+num_header_symbols = 100;
 % make 100 random bits of values +- 1
 real_bits = sign(randn(N,1));
 imag_bits = sign(randn(N,1));
+
+real_header_bits = sign(randn(num_header_symbols, 1));
+imag_header_bits = sign(randn(num_header_symbols, 1));
 
 % TODO: create a known header to add to the begininng of the data. Save this as
 % a data file separately so we can read it into our correction script.
@@ -17,16 +21,26 @@ pulse = ones(Symbol_period, 1);
 xi = zeros(Symbol_period*length(real_bits),1);
 xq = zeros(Symbol_period*length(imag_bits),1);
 
+header_real = zeros(Symbol_period * length(real_header_bits), 1);
+header_imag = zeros(Symbol_period * length(imag_header_bits), 1);
+
 % assign every Symbol_period-th sample to equal a value from bits
 xi(1:Symbol_period:end) = real_bits;
 xq(1:Symbol_period:end) = imag_bits;
+
+header_real(1:Symbol_period:end) = real_header_bits;
+header_imag(1:Symbol_period:end) = imag_header_bits;
 
 % now convolve the single generic pulse with the spread-out bits
 xi_tx = conv(pulse, xi);
 xq_tx = conv(pulse, xq);
 
+header_real_tx = conv(pulse, header_real);
+header_imag_tx = conv(pulse, header_imag);
+
 % combine signals into one complex signal
 x_tx = xi_tx + j * xq_tx;
+header_tx = header_real_tx + j * header_imag_tx;
 
 % to visualize, make a stem plot
 stem(x_tx);
@@ -34,7 +48,24 @@ stem(x_tx);
 % zero pad the beginning with 100000 samples to ensure that any glitch that
 % happens when we start transmitting doesn't effect the data
 
-x_tx = [zeros(100000, 1); x_tx;zeros(100000, 1)];
+% save the data signal and the header signal in .dat files for later use.
+x_data = zeros(length(x_tx) * 2, 1);
+x_data(1:2:end) = real(x_tx);
+x_data(2:2:end) = imag(x_tx);
+
+f1 = fopen('tx4_data_only.dat', 'wb');
+fwrite(f1, x_data / 2, 'float32');
+fclose(f1);
+
+header_data = zeros(length(header_tx) * 2, 1);
+header_data(1:2:end) = real(header_tx);
+header_data(2:2:end) = imag(header_tx);
+
+f1 = fopen('tx4_header_only.dat', 'wb');
+fwrite(f1, header_data / 2, 'float32');
+fclose(f1);
+
+x_tx = [zeros(100000, 1); header_tx; x_tx; zeros(100000, 1)];
 
 % here we write the data into a format that the USRP can understand
 % specifically, we use float32 numbers with real followed by imaginary
