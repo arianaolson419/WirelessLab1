@@ -1,7 +1,7 @@
 import numpy as np 
 import matplotlib.pyplot as plt
 
-# Open the file containing the received samples
+# Open the file containing the received samples.
 tmp = np.fromfile("receivefile.dat", dtype=np.float32)
 
 print("read file")
@@ -11,12 +11,12 @@ print(tmp)
 # with real followed by imaginary samples 
 # create a vector of half the length of the received values to store the
 # data. Make every other sample the real part and the remaining samples the
-# imaginary part
+# imaginary part.
 
 
 y = tmp[::2]+1j*tmp[1:2:]
 y = y[1000:]    # Drop the first 1000 samples to account for USRP tx glitch.
-mean_y = np.mean(y)
+mean_y = np.mean(y) # Correct for DC offset.
 y -= mean_y
 
 #eyeballed start & end
