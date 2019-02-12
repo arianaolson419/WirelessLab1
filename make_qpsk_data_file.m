@@ -3,6 +3,9 @@ N = 10000;
 real_bits = sign(randn(N,1));
 imag_bits = sign(randn(N,1));
 
+% TODO: create a known header to add to the begininng of the data. Save this as
+% a data file separately so we can read it into our correction script.
+
 Symbol_period = 20;
 
 % create a generic pulse of unit height
@@ -32,7 +35,6 @@ stem(x_tx);
 % happens when we start transmitting doesn't effect the data
 
 x_tx = [zeros(100000, 1); x_tx;zeros(100000, 1)];
-
 
 % here we write the data into a format that the USRP can understand
 % specifically, we use float32 numbers with real followed by imaginary
