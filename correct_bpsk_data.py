@@ -22,14 +22,16 @@ y -= mean_y
 #eyeballed start & end
 start = 926000 - 1000 + 120
 end = start + 200000 - 1000
+y = y[start:end]
 
 # display signal
-plt.plot(np.real(y)[start:end])
+plt.plot(np.real(y))
 plt.show()
 
 # Estimate the magnitude of the channel and divide the signal by this
 h_mag_est = np.sqrt(np.mean(np.square(y)))
 y_normalized = y / h_mag_est
+print(np.sqrt(np.mean(np.square(y_normalized))))
 
 # Create s[k] by squaring the signal
 s = np.square(y_normalized)
@@ -56,11 +58,15 @@ theta    = -1*np.angle(y_height)/2     # other peak: np.log(2.82879e6)/(-2 * 1j)
 psi = f_delta * np.arange(0,y_normalized.shape[-1])  + theta
 
 # If we ignore the costas loop:
-# x_est = y_normalized * np.exp(1j * psi)
-# x_est_len = len(x_est)
-# # Plot constellation
-# plt.plot(np.real(x_est), np.imag(x_est), '.')
-# plt.show()
+x_est = y_normalized * np.exp(1j * psi)
+x_est_len = len(x_est)
+# Plot constellation
+plt.figure(1)
+plt.plot(np.real(x_est))
+plt.show(1)
+plt.figure(2)
+plt.plot(np.real(x_est), np.imag(x_est), '.')
+plt.show(2)
 
 prev_error = 0
 x_est = []
@@ -89,5 +95,5 @@ print('plotting corrected signal')
 plt.subplot(2, 1, 1)
 plt.plot(np.real(x_est[:x_est_len // 10]))
 plt.subplot(2, 1, 2)
-#plt.plot(np.real(x_est)[:x_est_len // 10], np.imag(x_est)[:x_est_len // 10], '.')
+plt.plot(np.real(x_est)[:x_est_len // 10], np.imag(x_est)[:x_est_len // 10], '.')
 plt.show()
