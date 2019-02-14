@@ -33,7 +33,7 @@ if (end_index > len(y) - 1):
 
 cross_corr = signal.correlate(y[start_index:end_index], header)
 peak_index = start_index + np.argmax(cross_corr) # index of the largest peak in y
-# Make sure ther is a peak from cross correlation
+# Make sure there is a peak from cross correlation
 plt.plot(np.abs(cross_corr))
 plt.show()
 
@@ -54,30 +54,34 @@ plt.show()
 h_mag_est = np.sqrt(np.mean(np.square(y)))
 y_normalized = y / h_mag_est
 
-# TODO: Split the signal into 2 or 5 parts and calculate separate f_deltas for each one
-
 # Create s[k] by raising the signal to the 4th power.
 s = np.power(y_normalized, 4)
-fft = np.fft.fft(s)
-shifted_fft = np.fft.fftshift(fft)
-freq_axis = np.linspace(-np.pi, np.pi, shifted_fft.shape[-1])
 
-# Plot FFT to see a peak near 0
-print("FFT Plot")
-plt.suptitle("FFT Plot")
-plt.plot(freq_axis, np.abs(shifted_fft))
-plt.show()
+# Split the signal into 2 or 5 parts and calculate separate f_deltas for each one
+num_chunks = 1  # Be careful to use chunks that evenly divide the data.
+chunk_len = signal_len // num_chunks
+for i in range(num_chunks):
+    start = i * chunk_len
+    fft = np.fft.fft(s[start: start + chunk_len])
+    shifted_fft = np.fft.fftshift(fft)
+    freq_axis = np.linspace(-np.pi, np.pi, shifted_fft.shape[-1])
 
-# Get f_delta and theta from finding frequency value and peak height
-x_offset = freq_axis[np.argmax(shifted_fft)]
-y_height = np.max(shifted_fft)
-f_delta  = (x_offset)/-4                   
-theta    = -1*np.angle(y_height)/4
+    # Plot FFT to see a peak near 0
+    print("FFT Plot {} / {}".format(i + 1, num_chunks))
+    plt.suptitle("FFT Plot")
+    plt.plot(freq_axis, np.abs(shifted_fft))
+    plt.show()
 
-# # Estimate x by multiplying ~y exp(j(freq_est * k + theta_est.
-psi = f_delta * np.arange(0,y_normalized.shape[-1])  + theta
+    # Get f_delta and theta from finding frequency value and peak height
+    x_offset = freq_axis[np.argmax(shifted_fft)]
+    y_height = np.max(shifted_fft)
+    f_delta  = (x_offset)/-4                   
+    theta    = -1*np.angle(y_height)/4
 
-x_est = y_normalized * np.exp(1j * psi)
+    # Estimate x by multiplying ~y exp(j(freq_est * k + theta_est.
+    psi = f_delta * np.arange(0, chunk_len)  + theta
+
+    x_est = y_normalized[start: start + chunk_len] * np.exp(1j * psi)
 
 # # Plot the real and imaginary waveforms
 print("real vs imaginary")
@@ -97,9 +101,9 @@ plt.plot(np.real(x_est), np.imag(x_est), '.')
 plt.show(2)
 
 
-# TODO: 
+# TODO: Rotate constellation by (2n +1) / 4.
 
-# # TODO: Parse the data for the bit sequence.
+# TODO: Parse the data for the bit sequence.
 
 def turn_data_to_bits(input):
     """
