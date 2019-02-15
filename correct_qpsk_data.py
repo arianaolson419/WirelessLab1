@@ -9,12 +9,19 @@ symbol_period = 20
 signal_len = (N + num_header_symbols) * symbol_period
 original_data = np.fromfile("tx4.dat", dtype=np.float32)
 original_data = original_data[::2] + 1j*original_data[1::2]
+
 plt.suptitle("Original Data Real (above), Imaginary(below)")
-#plt.subplot(2, 1, 1)
-#plt.plot(np.real(original_data))
-#plt.subplot(2, 1, 2)
-#plt.plot(np.imag(original_data))
-#plt.show()
+plt.subplot(2, 1, 1)
+plt.plot(np.real(original_data))
+plt.title('Real')
+plt.xlabel('Sample')
+plt.ylabel('Amplitude')
+plt.subplot(2, 1, 2)
+plt.plot(np.imag(original_data))
+plt.title('Imaginary')
+plt.xlabel('Sample')
+plt.ylabel('Amplitude')
+plt.show()
 
 # Open the file containing the received samples.
 tmp = np.fromfile("receiveQPSK_gain70.dat", dtype=np.float32)
@@ -25,33 +32,42 @@ mean_y = np.mean(y) # Correct for DC offset.
 y -= mean_y
 header = tmp_header[::2] + 1j * tmp_header[1:2:]
 data = (tmp_data[::2] + 1j * tmp_data[1:2:])[0:N * symbol_period]  # We changed the number of bits being read, so we have to cut off the data for comparison.
-print(data.shape)
 
-# cut off the noise 
-rms_start_cutoff = .5 * np.max(y)
-start_index = np.argmax(np.abs(y) > rms_start_cutoff)
+# Cut off the noise.
+start_cutoff = .5 * np.max(y)
+start_index = np.argmax(np.abs(y) > start_cutoff)
 end_index = int(start_index + signal_len)
 if (end_index > len(y) - 1):
     end_index = len(y) - 1
 
+# Cross correlate with header to find the exact start of the signal.
 cross_corr = signal.correlate(y[start_index:end_index], header)
-peak_index = start_index + np.argmax(cross_corr) # index of the largest peak in y
-# Make sure there is a peak from cross correlation
-#plt.plot(np.abs(cross_corr))
-#plt.show()
+peak_index = start_index + (np.argmax(cross_corr) - (num_header_symbols * symbol_period // 2)) # index of the largest peak in y
 
-# take the signal from the start of the data to the known length of the data
+# Make sure there is a peak from cross correlation
+plt.plot(np.abs(cross_corr))
+plt.show()
+
+# Take the signal from the start of the data to the known length of the data
 # isolate just the data part of the signal.
 print("Y data packet plot")
-y = y[peak_index:peak_index + signal_len]
-# plot y data packet -- real vs. imaginary
-#plt.suptitle("original data -- Real (above), Imaginary(below)")
-#plt.subplot(2, 1, 1)
-#plt.plot(np.real(y))
-#plt.subplot(2, 1, 2)
-#plt.plot(np.imag(y))
-#plt.show()
+y_tmp = np.copy(y)
+y_tmp[:start_index] = 0
+y_tmp[start_index + signal_len:] = 0
+plt.plot(y.real)
+plt.plot(y_tmp.real)
+plt.title('Compare signal')
+plt.show()
+y = y[start_index:start_index + signal_len]
 
+#y = y[peak_index:peak_index + signal_len]
+# plot y data packet -- real vs. imaginary
+plt.suptitle("original data -- Real (above), Imaginary(below)")
+plt.subplot(2, 1, 1)
+plt.plot(np.real(y))
+plt.subplot(2, 1, 2)
+plt.plot(np.imag(y))
+plt.show()
 
 # Estimate the magnitude of the channel and divide the signal by this
 h_mag_est = np.sqrt(np.mean(np.square(y)))
@@ -64,7 +80,7 @@ s = np.power(y_normalized, 4)
 # Split the signal into 2 or 5 parts and calculate separate f_deltas for each one
 num_chunks = 2  # Be careful to use chunks that evenly divide the data.
 chunk_len = signal_len // num_chunks
-x_est = np.zeros(y_normalized.shape[-1])
+x_est = np.zeros(y_normalized.shape[-1], dtype='complex64')
 for i in range(num_chunks):
     start = i * chunk_len
     fft = np.fft.fft(s[start: start + chunk_len])
@@ -86,17 +102,18 @@ for i in range(num_chunks):
     # Estimate x by multiplying ~y exp(j(freq_est * k + theta_est.
     psi = f_delta * np.arange(0, chunk_len)  + theta
 
+    print(y_normalized.dtype)
     x_est[start: start + chunk_len] = y_normalized[start: start + chunk_len] * np.exp(1j * psi)
 
 # # Plot the real and imaginary waveforms
 print("real vs imaginary")
-#plt.suptitle("received signal-- real (above) & imaginary (below)")
-#plt.figure(1)
-#plt.subplot(2, 1, 1)
-#plt.plot(np.real(x_est))
-#plt.subplot(2, 1, 2)
-#plt.plot(np.imag(x_est))
-#plt.show(1)
+plt.suptitle("received signal-- real (above) & imaginary (below)")
+plt.figure(1)
+plt.subplot(2, 1, 1)
+plt.plot(np.real(x_est))
+plt.subplot(2, 1, 2)
+plt.plot(np.imag(x_est))
+plt.show(1)
 
 # # Plot constellation
 print("constellation plot")
