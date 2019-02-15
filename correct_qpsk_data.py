@@ -49,12 +49,6 @@ plt.subplot(2, 1, 2)
 plt.plot(np.imag(y))
 plt.show()
 
-
-# Estimate the magnitude of the channel and divide the signal by this
-h_mag_est = np.sqrt(np.mean(np.square(y)))
-y_normalized = y / h_mag_est
-
-
 # TODO: Split the signal into 2 or 5 parts and calculate separate f_deltas for each one
 
 num_parts = 1
