@@ -124,11 +124,11 @@ print("constellation plot")
 
 
 # TODO: Rotate constellation by (2n +1) / 4.
-def rotate_constellation_quadrants(n, signal):
-    """Rotates the constellation by (2n + 1) / 4 in order to shift the quadrants
-    of the data.
+def rotate_constellation_quadrants(angle, signal):
+    """Rotates the constellation by the given angle, in radians, in order to
+    shift the quadrants of the data.
     """
-    return signal * np.exp(1j * (2 * n + 1) * np.pi / 4)
+    return signal * np.exp(1j * angle)
 
 def parse_data(signal):
     bitsequence = []
@@ -165,7 +165,7 @@ def parse_data(signal):
 #    return bitsequence
 
 # Rotate the signal
-x_est_r = rotate_constellation_quadrants(0, x_est)
+x_est_r = rotate_constellation_quadrants(9 * np.pi / 4,  x_est)
 
 # Parse the bits of the transmitted signal.
 header_bits = parse_data(header)
